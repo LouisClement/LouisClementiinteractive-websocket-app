@@ -1,0 +1,52 @@
+.interactive-buttons {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.status {
+  margin-bottom: 2rem;
+  padding: 1rem;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+}
+
+.buttons-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.interactive-button {
+  padding: 1rem 2rem;
+  font-size: 1.2rem;
+  border: none;
+  border-radius: 8px;
+  background-color: #646cff;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.interactive-button:hover {
+  background-color: #535bf2;
+}
+
+.waiting-room {
+  text-align: center;
+  padding: 2rem;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  margin-top: 2rem;
+}
+
+.waiting-room h2 {
+  color: #646cff;
+  margin-bottom: 1rem;
+}
+
+.waiting-room p {
+  margin: 0.5rem 0;
+  font-size: 1.1rem;
+}
