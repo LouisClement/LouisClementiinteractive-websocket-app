@@ -174,7 +174,9 @@
     </div>
 
     <script>
-        const ws = new WebSocket('ws://127.0.0.1:8080');
+        // Determine WebSocket URL based on current location
+        const wsHost = window.location.hostname === 'localhost' ? '127.0.0.1' : window.location.hostname;
+        const ws = new WebSocket(`ws://${wsHost}:8080`);
         const statusDiv = document.getElementById('status');
         const messagesDiv = document.getElementById('messages');
 
@@ -190,18 +192,17 @@
 
         ws.onmessage = (event) => {
             try {
-                const message = JSON.parse(event.data);
-                console.log('Message reçu:', message);
+                const data = JSON.parse(event.data);
+                console.log('Received:', data);
                 
-                if (message.type === 'buttonPress') {
-                    const messageElement = document.createElement('p');
-                    messageElement.textContent = `Bouton ${message.buttonId} pressé`;
-                    messagesDiv.insertBefore(messageElement, messagesDiv.firstChild);
-                } else if (message.type === 'connected') {
-                    console.log('Connection confirmée');
+                if (data.type === 'buttonMessage') {
+                    const message = `Button ${data.buttonId} pressed`;
+                    addMessage(message);
+                } else if (data.type === 'roomState') {
+                    statusDiv.textContent = `État de la salle : ${data.state}`;
                 }
-            } catch (e) {
-                console.error('Erreur lors du traitement du message:', e);
+            } catch (error) {
+                console.error('Error processing message:', error);
             }
         };
 

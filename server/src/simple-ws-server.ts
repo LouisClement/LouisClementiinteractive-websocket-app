@@ -16,28 +16,33 @@ wss.on('connection', (ws) => {
     ws.on('message', (message) => {
         try {
             const data = JSON.parse(message.toString());
-            console.log('Received:', data);
+            console.log('Received message:', data);
             
-            if (data.buttonId) {
-                // Broadcast the button press to all clients
-                const response = {
-                    type: 'buttonPress',
-                    buttonId: data.buttonId,
-                    timestamp: Date.now()
-                };
-                wss.clients.forEach(client => {
-                    if (client.readyState === ws.OPEN) {
-                        client.send(JSON.stringify(response));
-                    }
-                });
-            }
-        } catch (e) {
-            console.error('Error processing message:', e);
+            // Format the message for Chataigne compatibility
+            const formattedMessage = {
+                type: 'buttonMessage',
+                buttonId: data.buttonId
+            };
+            
+            console.log('Broadcasting message:', formattedMessage);
+            
+            // Broadcast the message to all connected clients
+            wss.clients.forEach((client) => {
+                if (client.readyState === WebSocket.OPEN) {
+                    client.send(JSON.stringify(formattedMessage));
+                }
+            });
+        } catch (error) {
+            console.error('Error processing message:', error);
         }
     });
 
     ws.on('close', () => {
         console.log('Client disconnected');
+    });
+
+    ws.on('error', (error) => {
+        console.error('WebSocket error:', error);
     });
 
     // Send initial connection confirmation
@@ -46,5 +51,7 @@ wss.on('connection', (ws) => {
 
 const PORT = process.env.PORT || 8080;
 server.listen(PORT, () => {
-    console.log(`WebSocket server running on ws://127.0.0.1:${PORT}`);
+    console.log(`WebSocket server running on port ${PORT}`);
+    console.log(`Local access: http://localhost:${PORT}`);
+    console.log(`Network access: http://192.168.1.34:${PORT}`);
 });
