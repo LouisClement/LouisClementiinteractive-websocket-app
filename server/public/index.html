@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MUTABILIS</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #2b6186;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            width: 100%;
+            max-width: 500px;
+            padding: 20px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .title {
+            color: #000;
+            text-align: center;
+            font-size: 2.5em;
+            margin: 20px 0;
+            font-family: 'Times New Roman', serif;
+        }
+        .game-area {
+            position: relative;
+            width: 100%;
+            background-color: transparent;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .top-buttons {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+        .image-area {
+            position: relative;
+            width: 500px;
+            height: 800px;
+            background-image: url('images/statue.jpg');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            margin: 20px auto;
+        }
+        .image-area .button.transparent {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .image-area .button.transparent:hover {
+            transform: scale(1.1);
+        }
+        .image-area .button.transparent.red {
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.4);
+            background: rgba(255, 0, 0, 0.2);
+        }
+        .image-area .button.transparent.blue {
+            box-shadow: 0 0 20px rgba(0, 0, 255, 0.4);
+            background: rgba(0, 0, 255, 0.2);
+        }
+        .image-area .button.transparent.green {
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.4);
+            background: rgba(0, 255, 0, 0.2);
+        }
+        .image-area .button.transparent.yellow {
+            box-shadow: 0 0 20px rgba(255, 255, 0, 0.4);
+            background: rgba(255, 255, 0, 0.2);
+        }
+        .button {
+            aspect-ratio: 1;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        .button:active {
+            transform: scale(0.95);
+        }
+        .button.pink {
+            background-color: #d53f8c;
+        }
+        .button.orange {
+            background-color: #ed8936;
+        }
+        .button.transparent {
+            background-color: transparent;
+            box-shadow: none;
+        }
+        .button svg {
+            width: 50%;
+            height: 50%;
+            fill: white;
+        }
+        #status {
+            color: white;
+            text-align: center;
+            padding: 10px;
+            margin-top: 20px;
+            background-color: rgba(0,0,0,0.2);
+            border-radius: 10px;
+        }
+        #messages {
+            color: white;
+            margin-top: 20px;
+            padding: 10px;
+            background-color: rgba(0,0,0,0.2);
+            border-radius: 10px;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        #messages p {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">MUTABILIS</h1>
+        <div class="game-area">
+            <div class="top-buttons">
+                <button class="button pink" onclick="pressButton(1)">
+                    <svg viewBox="0 0 24 24"><path d="M9 11.24V7.5C9 6.12 10.12 5 11.5 5S14 6.12 14 7.5v3.74c1.21-.81 2-2.18 2-3.74C16 5.01 13.99 3 11.5 3S7 5.01 7 7.5c0 1.56.79 2.93 2 3.74zm9.84 4.63l-4.54-2.26c-.17-.07-.35-.11-.54-.11H13v-6c0-.83-.67-1.5-1.5-1.5S10 6.67 10 7.5v10.74c-3.6-.76-3.54-.75-3.67-.75-.31 0-.59.13-.79.33l-.79.8 4.94 4.94c.27.27.65.44 1.06.44h6.79c.75 0 1.33-.55 1.44-1.28l.75-5.27c.01-.07.02-.14.02-.2 0-.62-.38-1.16-.91-1.38z"/></svg>
+                </button>
+                <button class="button orange" onclick="pressButton(2)">
+                    <svg viewBox="0 0 24 24"><path d="M9 11.24V7.5C9 6.12 10.12 5 11.5 5S14 6.12 14 7.5v3.74c1.21-.81 2-2.18 2-3.74C16 5.01 13.99 3 11.5 3S7 5.01 7 7.5c0 1.56.79 2.93 2 3.74zm9.84 4.63l-4.54-2.26c-.17-.07-.35-.11-.54-.11H13v-6c0-.83-.67-1.5-1.5-1.5S10 6.67 10 7.5v10.74c-3.6-.76-3.54-.75-3.67-.75-.31 0-.59.13-.79.33l-.79.8 4.94 4.94c.27.27.65.44 1.06.44h6.79c.75 0 1.33-.55 1.44-1.28l.75-5.27c.01-.07.02-.14.02-.2 0-.62-.38-1.16-.91-1.38z"/></svg>
+                </button>
+                <button class="button pink" onclick="pressButton(3)">
+                    <svg viewBox="0 0 24 24"><path d="M9 11.24V7.5C9 6.12 10.12 5 11.5 5S14 6.12 14 7.5v3.74c1.21-.81 2-2.18 2-3.74C16 5.01 13.99 3 11.5 3S7 5.01 7 7.5c0 1.56.79 2.93 2 3.74zm9.84 4.63l-4.54-2.26c-.17-.07-.35-.11-.54-.11H13v-6c0-.83-.67-1.5-1.5-1.5S10 6.67 10 7.5v10.74c-3.6-.76-3.54-.75-3.67-.75-.31 0-.59.13-.79.33l-.79.8 4.94 4.94c.27.27.65.44 1.06.44h6.79c.75 0 1.33-.55 1.44-1.28l.75-5.27c.01-.07.02-.14.02-.2 0-.62-.38-1.16-.91-1.38z"/></svg>
+                </button>
+                <button class="button orange" onclick="pressButton(4)">
+                    <svg viewBox="0 0 24 24"><path d="M9 11.24V7.5C9 6.12 10.12 5 11.5 5S14 6.12 14 7.5v3.74c1.21-.81 2-2.18 2-3.74C16 5.01 13.99 3 11.5 3S7 5.01 7 7.5c0 1.56.79 2.93 2 3.74zm9.84 4.63l-4.54-2.26c-.17-.07-.35-.11-.54-.11H13v-6c0-.83-.67-1.5-1.5-1.5S10 6.67 10 7.5v10.74c-3.6-.76-3.54-.75-3.67-.75-.31 0-.59.13-.79.33l-.79.8 4.94 4.94c.27.27.65.44 1.06.44h6.79c.75 0 1.33-.55 1.44-1.28l.75-5.27c.01-.07.02-.14.02-.2 0-.62-.38-1.16-.91-1.38z"/></svg>
+                </button>
+            </div>
+            <div class="image-area">
+                <button class="button transparent red" onclick="pressButton(5)" style="top: 40px; left: 250px;">
+                    <svg viewBox="0 0 24 24"><path d="M9 11.24V7.5C9 6.12 10.12 5 11.5 5S14 6.12 14 7.5v3.74c1.21-.81 2-2.18 2-3.74C16 5.01 13.99 3 11.5 3S7 5.01 7 7.5c0 1.56.79 2.93 2 3.74zm9.84 4.63l-4.54-2.26c-.17-.07-.35-.11-.54-.11H13v-6c0-.83-.67-1.5-1.5-1.5S10 6.67 10 7.5v10.74c-3.6-.76-3.54-.75-3.67-.75-.31 0-.59.13-.79.33l-.79.8 4.94 4.94c.27.27.65.44 1.06.44h6.79c.75 0 1.33-.55 1.44-1.28l.75-5.27c.01-.07.02-.14.02-.2 0-.62-.38-1.16-.91-1.38z"/></svg>
+                </button>
+                <button class="button transparent blue" onclick="pressButton(6)" style="top: 200px; left: 250px;">
+                    <svg viewBox="0 0 24 24"><path d="M9 11.24V7.5C9 6.12 10.12 5 11.5 5S14 6.12 14 7.5v3.74c1.21-.81 2-2.18 2-3.74C16 5.01 13.99 3 11.5 3S7 5.01 7 7.5c0 1.56.79 2.93 2 3.74zm9.84 4.63l-4.54-2.26c-.17-.07-.35-.11-.54-.11H13v-6c0-.83-.67-1.5-1.5-1.5S10 6.67 10 7.5v10.74c-3.6-.76-3.54-.75-3.67-.75-.31 0-.59.13-.79.33l-.79.8 4.94 4.94c.27.27.65.44 1.06.44h6.79c.75 0 1.33-.55 1.44-1.28l.75-5.27c.01-.07.02-.14.02-.2 0-.62-.38-1.16-.91-1.38z"/></svg>
+                </button>
+                <button class="button transparent green" onclick="pressButton(7)" style="top: 350px; right: 120px;">
+                    <svg viewBox="0 0 24 24"><path d="M9 11.24V7.5C9 6.12 10.12 5 11.5 5S14 6.12 14 7.5v3.74c1.21-.81 2-2.18 2-3.74C16 5.01 13.99 3 11.5 3S7 5.01 7 7.5c0 1.56.79 2.93 2 3.74zm9.84 4.63l-4.54-2.26c-.17-.07-.35-.11-.54-.11H13v-6c0-.83-.67-1.5-1.5-1.5S10 6.67 10 7.5v10.74c-3.6-.76-3.54-.75-3.67-.75-.31 0-.59.13-.79.33l-.79.8 4.94 4.94c.27.27.65.44 1.06.44h6.79c.75 0 1.33-.55 1.44-1.28l.75-5.27c.01-.07.02-.14.02-.2 0-.62-.38-1.16-.91-1.38z"/></svg>
+                </button>
+                <button class="button transparent yellow" onclick="pressButton(8)" style="top: 550px; left: 200px;">
+                    <svg viewBox="0 0 24 24"><path d="M9 11.24V7.5C9 6.12 10.12 5 11.5 5S14 6.12 14 7.5v3.74c1.21-.81 2-2.18 2-3.74C16 5.01 13.99 3 11.5 3S7 5.01 7 7.5c0 1.56.79 2.93 2 3.74zm9.84 4.63l-4.54-2.26c-.17-.07-.35-.11-.54-.11H13v-6c0-.83-.67-1.5-1.5-1.5S10 6.67 10 7.5v10.74c-3.6-.76-3.54-.75-3.67-.75-.31 0-.59.13-.79.33l-.79.8 4.94 4.94c.27.27.65.44 1.06.44h6.79c.75 0 1.33-.55 1.44-1.28l.75-5.27c.01-.07.02-.14.02-.2 0-.62-.38-1.16-.91-1.38z"/></svg>
+                </button>
+            </div>
+            <div id="status">État de la salle : En attente...</div>
+            <div id="messages"></div>
+        </div>
+    </div>
+
+    <script>
+        const socket = io();
+        const statusDiv = document.getElementById('status');
+        const messagesDiv = document.getElementById('messages');
+
+        socket.on('connect', () => {
+            console.log('Connecté au serveur');
+            statusDiv.textContent = 'Connecté au serveur';
+        });
+
+        socket.on('roomState', (state) => {
+            console.log('État de la salle:', state);
+            statusDiv.textContent = `Utilisateurs connectés: ${state.connectedUsers}`;
+        });
+
+        socket.on('buttonMessage', (message) => {
+            const messageElement = document.createElement('p');
+            messageElement.textContent = message;
+            messagesDiv.insertBefore(messageElement, messagesDiv.firstChild);
+        });
+
+        function pressButton(buttonId) {
+            socket.emit('buttonPress', { buttonId });
+        }
+    </script>
+</body>
+</html>
