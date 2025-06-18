@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MUTABILIS</title>
-    <script src="/socket.io/socket.io.js"></script>
+    <!-- WebSocket natif, pas besoin de script externe -->
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -175,28 +175,57 @@
     </div>
 
     <script>
-        const socket = io();
+        const wsHost = window.location.hostname === 'localhost' ? '127.0.0.1' : window.location.hostname;
+        const ws = new WebSocket(`ws://${wsHost}:3000`);
         const statusDiv = document.getElementById('status');
         const messagesDiv = document.getElementById('messages');
+        let myButtons = [];
 
-        socket.on('connect', () => {
-            console.log('Connecté au serveur');
-            statusDiv.textContent = 'Connecté au serveur';
-        });
+        ws.onopen = () => {
+            console.log('Connecté au serveur WebSocket');
+            statusDiv.textContent = 'Connecté au serveur WebSocket';
+        };
 
-        socket.on('roomState', (state) => {
-            console.log('État de la salle:', state);
-            statusDiv.textContent = `Utilisateurs connectés: ${state.connectedUsers}`;
-        });
+        ws.onclose = () => {
+            console.log('Déconnecté du serveur WebSocket');
+            statusDiv.textContent = 'Déconnecté du serveur WebSocket';
+        };
 
-        socket.on('buttonMessage', (message) => {
-            const messageElement = document.createElement('p');
-            messageElement.textContent = message;
-            messagesDiv.insertBefore(messageElement, messagesDiv.firstChild);
-        });
+        ws.onmessage = (event) => {
+            try {
+                const data = JSON.parse(event.data);
+                console.log('Received:', data);
+                
+                if (data.type === 'userState') {
+                    myButtons = data.buttons;
+                    if (data.position === 'active') {
+                        statusDiv.textContent = 'Connecté - Actif';
+                    } else {
+                        statusDiv.textContent = 'Connecté - En attente';
+                    }
+                } else if (data.type === 'buttonMessage') {
+                    const message = `Bouton ${data.buttonId} pressé par ${data.userId}`;
+                    const messageElement = document.createElement('p');
+                    messageElement.textContent = message;
+                    messagesDiv.insertBefore(messageElement, messagesDiv.firstChild);
+                } else if (data.type === 'error') {
+                    const messageElement = document.createElement('p');
+                    messageElement.textContent = `Erreur : ${data.message}`;
+                    messageElement.style.color = '#ff0000';
+                    messagesDiv.insertBefore(messageElement, messagesDiv.firstChild);
+                }
+            } catch (error) {
+                console.error('Error processing message:', error);
+            }
+        };
 
         function pressButton(buttonId) {
-            socket.emit('buttonPress', { buttonId });
+            if (ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ buttonId }));
+            } else {
+                console.error('WebSocket non connecté');
+                statusDiv.textContent = 'Non connecté au serveur';
+            }
         }
     </script>
 </body>
