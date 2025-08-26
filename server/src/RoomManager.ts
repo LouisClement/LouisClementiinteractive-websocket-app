@@ -15,16 +15,6 @@ export class RoomManager {
     private room: Room;
     private notifyCallback: () => void = () => {};
 
-    private static readonly BUTTON_DISTRIBUTIONS: { [key: number]: number[][] } = {
-        1: [[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]],
-        2: [[1, 2, 3, 4, 9, 10, 11, 12], [5, 6, 7, 8, 13, 14, 15, 16]],
-        3: [[1, 2, 3, 9, 10, 11], [4, 5, 6, 12, 13, 14], [7, 8, 15, 16]],
-        4: [[1, 2, 9, 10], [3, 4, 11, 12], [5, 6, 13, 14], [7, 8, 15, 16]],
-        5: [[1, 2, 9], [3, 4, 10], [5, 6, 11], [7, 12], [8, 13, 14, 15, 16]],
-        6: [[1, 2], [3, 4], [5, 9], [6, 10], [7, 11, 12], [8, 13, 14, 15, 16]],
-        7: [[1, 2], [3, 4], [5, 9], [6, 10], [7, 11], [8, 12], [13, 14, 15, 16]],
-        8: [[1, 2], [3, 4], [5, 9], [6, 10], [7, 11], [8, 12], [13, 14], [15, 16]]
-    };
 
     constructor(rotationIntervalMs: number = 5 * 60 * 1000) {
         this.room = {
@@ -50,10 +40,14 @@ export class RoomManager {
         const userCount = this.room.activeUsers.length;
         if (userCount === 0) return;
 
-        const distribution = RoomManager.BUTTON_DISTRIBUTIONS[userCount] || [];
-        this.room.activeUsers.forEach((user, index) => {
-            user.assignedButtons = distribution[index] || [];
-        });
+        // Reset all buttons
+        this.room.activeUsers.forEach(user => user.assignedButtons = []);
+
+        const totalButtons = 16;
+        for (let i = 1; i <= totalButtons; i++) {
+            const userIndex = (i - 1) % userCount;
+            this.room.activeUsers[userIndex].assignedButtons.push(i);
+        }
     }
 
     public addUser(userId: string): void {

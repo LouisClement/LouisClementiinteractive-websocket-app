@@ -135,12 +135,37 @@
         #messages p {
             margin: 5px 0;
         }
+        .waiting-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(43, 97, 134, 0.95);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2em;
+            z-index: 10;
+            border-radius: 15px;
+            text-align: center;
+            padding: 20px;
+        }
+        .hidden {
+            display: none;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1 class="title">MUTABILIS</h1>
         <div class="game-area">
+            <div id="waiting-overlay" class="waiting-overlay hidden">
+                <div>
+                    <p>patience c'est bientôt à toi...</p>
+                </div>
+            </div>
             <div class="top-buttons">
                 <button class="button pink" onclick="pressButton(1)" data-id="1">
                     <svg viewBox="0 0 24 24"><path d="M9 11.24V7.5C9 6.12 10.12 5 11.5 5S14 6.12 14 7.5v3.74c1.21-.81 2-2.18 2-3.74C16 5.01 13.99 3 11.5 3S7 5.01 7 7.5c0 1.56.79 2.93 2 3.74zm9.84 4.63l-4.54-2.26c-.17-.07-.35-.11-.54-.11H13v-6c0-.83-.67-1.5-1.5-1.5S10 6.67 10 7.5v10.74c-3.6-.76-3.54-.75-3.67-.75-.31 0-.59.13-.79.33l-.79.8 4.94 4.94c.27.27.65.44 1.06.44h6.79c.75 0 1.33-.55 1.44-1.28l.75-5.27c.01-.07.02-.14.02-.2 0-.62-.38-1.16-.91-1.38z"/></svg>
@@ -179,6 +204,7 @@
         const ws = new WebSocket(`ws://${wsHost}:3000`);
         const statusDiv = document.getElementById('status');
         const messagesDiv = document.getElementById('messages');
+        const waitingOverlay = document.getElementById('waiting-overlay');
         let myButtons = [];
 
         ws.onopen = () => {
@@ -202,8 +228,10 @@
 
                     if (data.position === 'active') {
                         statusDiv.textContent = 'Connecté - Actif';
+                        waitingOverlay.classList.add('hidden');
                     } else {
                         statusDiv.textContent = `Connecté - En attente (Position: ${data.waitingCount})`;
+                        waitingOverlay.classList.remove('hidden');
                     }
                 } else if (data.type === 'buttonMessage') {
                     const message = `Bouton ${data.buttonId} pressé par ${data.userId}`;
