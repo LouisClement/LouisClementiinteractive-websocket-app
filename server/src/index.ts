@@ -1,68 +1,86 @@
 import express from 'express';
 import { createServer } from 'http';
-import { Server } from 'socket.io';
+import { WebSocket, WebSocketServer } from 'ws';
 import cors from 'cors';
 import { RoomManager } from './RoomManager';
+import path from 'path';
+
+// Serveur WebSocket pour Chataigne
+const chataigneWss = new WebSocketServer({ port: 8080 });
+let chataigneConnection: WebSocket | null = null;
+
+chataigneWss.on('connection', (ws) => {
+    console.log('Chataigne connected');
+    chataigneConnection = ws;
+    ws.on('close', () => { chataigneConnection = null; });
+    ws.on('error', (error) => { console.error('Chataigne connection error:', error); });
+});
 
 const app = express();
+app.use(cors());
+app.use(express.static(path.join(__dirname, '../public')));
 
-// Enable CORS
-app.use(cors({
-  origin: '*',
-  credentials: true
-}));
+const server = createServer(app);
+const wss = new WebSocketServer({ server });
+const roomManager = new RoomManager();
 
-// Serve static files from public directory
-app.use(express.static('public'));
+const sendStateToAllUsers = () => {
+    const state = roomManager.getState();
+    wss.clients.forEach((client: WebSocket & { userId?: string }) => {
+        if (client.readyState === WebSocket.OPEN && client.userId) {
+            const user = state.activeUsers.find(u => u.id === client.userId) || state.waitingUsers.find(u => u.id === client.userId);
+            if (user) {
+                const isActive = state.activeUsers.some(u => u.id === client.userId);
+                const waitingIndex = state.waitingUsers.findIndex(u => u.id === client.userId);
+                client.send(JSON.stringify({
+                    type: 'userState',
+                    buttons: isActive ? user.assignedButtons : [],
+                    position: isActive ? 'active' : 'waiting',
+                    waitingCount: isActive ? 0 : waitingIndex + 1,
+                    timeUntilRotation: roomManager.getTimeUntilNextRotation(),
+                }));
+            }
+        }
+    });
+};
 
-const httpServer = createServer(app);
-const io = new Server(httpServer, {
-  cors: {
-    origin: '*',
-    methods: ['GET', 'POST', 'OPTIONS'],
-    credentials: true
-  },
-  transports: ['websocket', 'polling'],
-  allowEIO3: true
+roomManager.setNotifyCallback(sendStateToAllUsers);
+
+wss.on('connection', (ws: WebSocket & { userId?: string }) => {
+    ws.userId = Math.random().toString(36).substring(7);
+    console.log('Client connected:', ws.userId);
+    roomManager.addUser(ws.userId);
+
+    ws.on('message', (message) => {
+        try {
+            const data = JSON.parse(message.toString());
+            if (data.buttonId && ws.userId && roomManager.canUseButton(ws.userId, data.buttonId)) {
+                if (chataigneConnection) {
+                    chataigneConnection.send(JSON.stringify({ buttonId: data.buttonId }));
+                }
+                const broadcastMessage = { type: 'buttonMessage', buttonId: data.buttonId, userId: ws.userId };
+                wss.clients.forEach(c => { if (c.readyState === WebSocket.OPEN) c.send(JSON.stringify(broadcastMessage)); });
+            } else {
+                ws.send(JSON.stringify({ type: 'error', message: 'Button not assigned' }));
+            }
+        } catch (error) {
+            console.error('Error processing message:', error);
+        }
+    });
+
+    ws.on('close', () => {
+        if (ws.userId) {
+            console.log('Client disconnected:', ws.userId);
+            roomManager.removeUser(ws.userId);
+        }
+    });
+
+    ws.on('error', (error) => {
+        console.error('WebSocket error for', ws.userId, ':', error);
+    });
 });
 
-const roomManager = new RoomManager(8, 5 * 60 * 1000); // 8 users max, 5 minutes timeout
-
-io.on('connection', (socket) => {
-  console.log('User connected:', socket.id);
-
-  // Automatically join room on connection
-  roomManager.addUser(socket.id);
-  const state = roomManager.getRoomState();
-  console.log('Room state after connection:', state);
-  io.emit('roomState', state);
-
-  socket.on('joinRoom', () => {
-    console.log('User joining room:', socket.id);
-    roomManager.addUser(socket.id);
-    const state = roomManager.getRoomState();
-    console.log('Room state after join:', state);
-    io.emit('roomState', state);
-  });
-
-  socket.on('buttonPress', ({ buttonId }) => {
-    console.log('Button press from user:', socket.id, 'button:', buttonId);
-    const message = roomManager.handleButtonPress(socket.id, buttonId);
-    if (message) {
-      io.emit('buttonMessage', message);
-    }
-  });
-
-  socket.on('disconnect', () => {
-    console.log('User disconnected:', socket.id);
-    roomManager.removeUser(socket.id);
-    const state = roomManager.getRoomState();
-    console.log('Room state after disconnect:', state);
-    io.emit('roomState', state);
-  });
-});
-
-const PORT = process.env.PORT || 8080;
-httpServer.listen(PORT, () => {
-  console.log(`Server running on http://127.0.0.1:${PORT}`);
+const PORT = parseInt(process.env.PORT || '3000', 10);
+server.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server running on http://0.0.0.0:${PORT}`);
 });

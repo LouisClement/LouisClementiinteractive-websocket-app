@@ -206,6 +206,10 @@ export class RoomManager {
         this.notifyUsersOfChanges = callback;
     }
 
+    public getState(): Room {
+        return this.room;
+    }
+
     public getActiveUsers(): { id: string, assignedButtons: number[] }[] {
         return this.room.activeUsers.map(user => ({
             id: user.id,

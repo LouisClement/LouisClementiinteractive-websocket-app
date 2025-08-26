@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MUTABILIS</title>
+    <!-- WebSocket natif, pas besoin de script externe -->
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -141,73 +142,44 @@
         <h1 class="title">MUTABILIS</h1>
         <div class="game-area">
             <div class="top-buttons">
-                <button id="button1" class="button pink" onclick="pressButton(1)">
+                <button class="button pink" onclick="pressButton(1)">
                     <svg viewBox="0 0 24 24"><path d="M9 11.24V7.5C9 6.12 10.12 5 11.5 5S14 6.12 14 7.5v3.74c1.21-.81 2-2.18 2-3.74C16 5.01 13.99 3 11.5 3S7 5.01 7 7.5c0 1.56.79 2.93 2 3.74zm9.84 4.63l-4.54-2.26c-.17-.07-.35-.11-.54-.11H13v-6c0-.83-.67-1.5-1.5-1.5S10 6.67 10 7.5v10.74c-3.6-.76-3.54-.75-3.67-.75-.31 0-.59.13-.79.33l-.79.8 4.94 4.94c.27.27.65.44 1.06.44h6.79c.75 0 1.33-.55 1.44-1.28l.75-5.27c.01-.07.02-.14.02-.2 0-.62-.38-1.16-.91-1.38z"/></svg>
                 </button>
-                <button id="button2" class="button pink" onclick="pressButton(2)">
+                <button class="button orange" onclick="pressButton(2)">
                     <svg viewBox="0 0 24 24"><path d="M9 11.24V7.5C9 6.12 10.12 5 11.5 5S14 6.12 14 7.5v3.74c1.21-.81 2-2.18 2-3.74C16 5.01 13.99 3 11.5 3S7 5.01 7 7.5c0 1.56.79 2.93 2 3.74zm9.84 4.63l-4.54-2.26c-.17-.07-.35-.11-.54-.11H13v-6c0-.83-.67-1.5-1.5-1.5S10 6.67 10 7.5v10.74c-3.6-.76-3.54-.75-3.67-.75-.31 0-.59.13-.79.33l-.79.8 4.94 4.94c.27.27.65.44 1.06.44h6.79c.75 0 1.33-.55 1.44-1.28l.75-5.27c.01-.07.02-.14.02-.2 0-.62-.38-1.16-.91-1.38z"/></svg>
                 </button>
-                <button id="button3" class="button pink" onclick="pressButton(3)">
+                <button class="button pink" onclick="pressButton(3)">
                     <svg viewBox="0 0 24 24"><path d="M9 11.24V7.5C9 6.12 10.12 5 11.5 5S14 6.12 14 7.5v3.74c1.21-.81 2-2.18 2-3.74C16 5.01 13.99 3 11.5 3S7 5.01 7 7.5c0 1.56.79 2.93 2 3.74zm9.84 4.63l-4.54-2.26c-.17-.07-.35-.11-.54-.11H13v-6c0-.83-.67-1.5-1.5-1.5S10 6.67 10 7.5v10.74c-3.6-.76-3.54-.75-3.67-.75-.31 0-.59.13-.79.33l-.79.8 4.94 4.94c.27.27.65.44 1.06.44h6.79c.75 0 1.33-.55 1.44-1.28l.75-5.27c.01-.07.02-.14.02-.2 0-.62-.38-1.16-.91-1.38z"/></svg>
                 </button>
-                <button id="button4" class="button pink" onclick="pressButton(4)">
+                <button class="button orange" onclick="pressButton(4)">
                     <svg viewBox="0 0 24 24"><path d="M9 11.24V7.5C9 6.12 10.12 5 11.5 5S14 6.12 14 7.5v3.74c1.21-.81 2-2.18 2-3.74C16 5.01 13.99 3 11.5 3S7 5.01 7 7.5c0 1.56.79 2.93 2 3.74zm9.84 4.63l-4.54-2.26c-.17-.07-.35-.11-.54-.11H13v-6c0-.83-.67-1.5-1.5-1.5S10 6.67 10 7.5v10.74c-3.6-.76-3.54-.75-3.67-.75-.31 0-.59.13-.79.33l-.79.8 4.94 4.94c.27.27.65.44 1.06.44h6.79c.75 0 1.33-.55 1.44-1.28l.75-5.27c.01-.07.02-.14.02-.2 0-.62-.38-1.16-.91-1.38z"/></svg>
                 </button>
             </div>
             <div class="image-area">
-                <button id="button5" class="button transparent red" onclick="pressButton(5)" style="top: 40px; left: 250px;">
+                <button class="button transparent red" onclick="pressButton(5)" style="top: 40px; left: 250px;">
                     <svg viewBox="0 0 24 24"><path d="M9 11.24V7.5C9 6.12 10.12 5 11.5 5S14 6.12 14 7.5v3.74c1.21-.81 2-2.18 2-3.74C16 5.01 13.99 3 11.5 3S7 5.01 7 7.5c0 1.56.79 2.93 2 3.74zm9.84 4.63l-4.54-2.26c-.17-.07-.35-.11-.54-.11H13v-6c0-.83-.67-1.5-1.5-1.5S10 6.67 10 7.5v10.74c-3.6-.76-3.54-.75-3.67-.75-.31 0-.59.13-.79.33l-.79.8 4.94 4.94c.27.27.65.44 1.06.44h6.79c.75 0 1.33-.55 1.44-1.28l.75-5.27c.01-.07.02-.14.02-.2 0-.62-.38-1.16-.91-1.38z"/></svg>
                 </button>
-                <button id="button6" class="button transparent blue" onclick="pressButton(6)" style="top: 200px; left: 250px;">
+                <button class="button transparent blue" onclick="pressButton(6)" style="top: 200px; left: 250px;">
                     <svg viewBox="0 0 24 24"><path d="M9 11.24V7.5C9 6.12 10.12 5 11.5 5S14 6.12 14 7.5v3.74c1.21-.81 2-2.18 2-3.74C16 5.01 13.99 3 11.5 3S7 5.01 7 7.5c0 1.56.79 2.93 2 3.74zm9.84 4.63l-4.54-2.26c-.17-.07-.35-.11-.54-.11H13v-6c0-.83-.67-1.5-1.5-1.5S10 6.67 10 7.5v10.74c-3.6-.76-3.54-.75-3.67-.75-.31 0-.59.13-.79.33l-.79.8 4.94 4.94c.27.27.65.44 1.06.44h6.79c.75 0 1.33-.55 1.44-1.28l.75-5.27c.01-.07.02-.14.02-.2 0-.62-.38-1.16-.91-1.38z"/></svg>
                 </button>
-                <button id="button7" class="button transparent green" onclick="pressButton(7)" style="top: 350px; right: 120px;">
+                <button class="button transparent green" onclick="pressButton(7)" style="top: 350px; right: 120px;">
                     <svg viewBox="0 0 24 24"><path d="M9 11.24V7.5C9 6.12 10.12 5 11.5 5S14 6.12 14 7.5v3.74c1.21-.81 2-2.18 2-3.74C16 5.01 13.99 3 11.5 3S7 5.01 7 7.5c0 1.56.79 2.93 2 3.74zm9.84 4.63l-4.54-2.26c-.17-.07-.35-.11-.54-.11H13v-6c0-.83-.67-1.5-1.5-1.5S10 6.67 10 7.5v10.74c-3.6-.76-3.54-.75-3.67-.75-.31 0-.59.13-.79.33l-.79.8 4.94 4.94c.27.27.65.44 1.06.44h6.79c.75 0 1.33-.55 1.44-1.28l.75-5.27c.01-.07.02-.14.02-.2 0-.62-.38-1.16-.91-1.38z"/></svg>
                 </button>
-                <button id="button8" class="button transparent yellow" onclick="pressButton(8)" style="top: 550px; left: 200px;">
+                <button class="button transparent yellow" onclick="pressButton(8)" style="top: 550px; left: 200px;">
                     <svg viewBox="0 0 24 24"><path d="M9 11.24V7.5C9 6.12 10.12 5 11.5 5S14 6.12 14 7.5v3.74c1.21-.81 2-2.18 2-3.74C16 5.01 13.99 3 11.5 3S7 5.01 7 7.5c0 1.56.79 2.93 2 3.74zm9.84 4.63l-4.54-2.26c-.17-.07-.35-.11-.54-.11H13v-6c0-.83-.67-1.5-1.5-1.5S10 6.67 10 7.5v10.74c-3.6-.76-3.54-.75-3.67-.75-.31 0-.59.13-.79.33l-.79.8 4.94 4.94c.27.27.65.44 1.06.44h6.79c.75 0 1.33-.55 1.44-1.28l.75-5.27c.01-.07.02-.14.02-.2 0-.62-.38-1.16-.91-1.38z"/></svg>
                 </button>
             </div>
-            <div id="status">Non connecté au serveur</div>
-            <div id="position"></div>
-            <div id="timer"></div>
+            <div id="status">État de la salle : En attente...</div>
             <div id="messages"></div>
         </div>
     </div>
 
     <script>
-        // Determine WebSocket URL based on current location
         const wsHost = window.location.hostname === 'localhost' ? '127.0.0.1' : window.location.hostname;
         const ws = new WebSocket(`ws://${wsHost}:3000`);
         const statusDiv = document.getElementById('status');
-        const positionDiv = document.getElementById('position');
-        const timerDiv = document.getElementById('timer');
         const messagesDiv = document.getElementById('messages');
         let myButtons = [];
-
-        function updateTimer(timeLeft) {
-            const minutes = Math.floor(timeLeft / 60000);
-            const seconds = Math.floor((timeLeft % 60000) / 1000);
-            timerDiv.textContent = `Prochaine rotation dans : ${minutes}m ${seconds}s`;
-        }
-
-        function addMessage(message) {
-            const messageElement = document.createElement('p');
-            messageElement.textContent = message;
-            messagesDiv.insertBefore(messageElement, messagesDiv.firstChild);
-        }
-
-        function updateButtonVisibility(buttons) {
-            console.log('Updating button visibility for buttons:', buttons);
-            myButtons = buttons;
-            // Show/hide buttons based on assignment
-            document.querySelectorAll('.button').forEach(button => {
-                const buttonId = parseInt(button.id.replace('button', ''));
-                const isAssigned = myButtons.includes(buttonId);
-                console.log(`Button ${buttonId}: ${isAssigned ? 'showing' : 'hiding'}`);
-                button.style.display = isAssigned ? 'block' : 'none';
-            });
-        };
 
         ws.onopen = () => {
             console.log('Connecté au serveur WebSocket');
@@ -227,26 +199,38 @@
                 if (data.type === 'userState') {
                     myButtons = data.buttons;
                     updateButtonVisibility(data.buttons);
-                    
+
                     if (data.position === 'active') {
                         statusDiv.textContent = 'Connecté - Actif';
-                        positionDiv.textContent = `Vos boutons : ${data.buttons.join(', ')}`;
                     } else {
-                        statusDiv.textContent = 'Connecté - En attente';
-                        positionDiv.textContent = `Position dans la file d'attente : ${data.waitingCount}`;
+                        statusDiv.textContent = `Connecté - En attente (Position: ${data.waitingCount})`;
                     }
-                    
-                    updateTimer(data.timeUntilRotation);
                 } else if (data.type === 'buttonMessage') {
                     const message = `Bouton ${data.buttonId} pressé par ${data.userId}`;
-                    addMessage(message);
+                    const messageElement = document.createElement('p');
+                    messageElement.textContent = message;
+                    messagesDiv.insertBefore(messageElement, messagesDiv.firstChild);
                 } else if (data.type === 'error') {
-                    addMessage(`Erreur : ${data.message}`);
+                    const messageElement = document.createElement('p');
+                    messageElement.textContent = `Erreur : ${data.message}`;
+                    messageElement.style.color = '#ff0000';
+                    messagesDiv.insertBefore(messageElement, messagesDiv.firstChild);
                 }
             } catch (error) {
                 console.error('Error processing message:', error);
             }
         };
+
+        function updateButtonVisibility(assignedButtons) {
+            document.querySelectorAll('.button').forEach(button => {
+                const buttonId = parseInt(button.getAttribute('onclick').match(/\d+/)[0]);
+                if (assignedButtons.includes(buttonId)) {
+                    button.style.display = 'flex';
+                } else {
+                    button.style.display = 'none';
+                }
+            });
+        }
 
         function pressButton(buttonId) {
             if (ws.readyState === WebSocket.OPEN) {
@@ -256,17 +240,6 @@
                 statusDiv.textContent = 'Non connecté au serveur';
             }
         }
-
-        document.querySelectorAll('.button').forEach(button => {
-            button.addEventListener('click', () => {
-                const buttonId = parseInt(button.id.replace('button', ''));
-                if (myButtons.includes(buttonId)) {
-                    ws.send(JSON.stringify({ buttonId }));
-                } else {
-                    addMessage('Vous n\'avez pas accès à ce bouton');
-                }
-            });
-        });
     </script>
 </body>
 </html>

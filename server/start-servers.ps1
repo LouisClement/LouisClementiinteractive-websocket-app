@@ -2,7 +2,8 @@
 Set-Location -Path $PSScriptRoot
 
 # Démarrer le serveur en arrière-plan
-Start-Process -FilePath "cmd" -ArgumentList "/c ts-node src/simple-ws-server.ts" -WindowStyle Minimized
+# Start the server in the current window to see logs
+ ts-node src/index.ts
 
 # Attendre que le serveur démarre
 Start-Sleep -Seconds 2
