@@ -245,7 +245,7 @@
 
         function startExperience() {
             const wsHost = window.location.hostname === 'localhost' ? '127.0.0.1' : window.location.hostname;
-            const ws = new WebSocket(`ws://${wsHost}:3000`);
+            const ws = new WebSocket(`ws://${wsHost}`);
             const statusDiv = document.getElementById('status');
             const messagesDiv = document.getElementById('messages');
             const waitingOverlay = document.getElementById('waiting-overlay');
