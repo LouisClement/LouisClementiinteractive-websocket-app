@@ -19,7 +19,8 @@
         .container {
             width: 100%;
             max-width: 500px;
-            padding: 20px;
+            height: 100vh; /* Occupe toute la hauteur de l'écran */
+            padding: 10px;
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
@@ -28,34 +29,40 @@
         .title {
             color: #000;
             text-align: center;
-            font-size: 2.5em;
-            margin: 20px 0;
+            font-size: 2em; /* Taille légèrement réduite pour mobile */
+            margin: 10px 0;
             font-family: 'Times New Roman', serif;
+            flex-shrink: 0; /* Empêche le titre de se réduire */
         }
         .game-area {
             position: relative;
             width: 100%;
-            background-color: transparent;
             display: flex;
             flex-direction: column;
             align-items: center;
+            flex-grow: 1; /* Permet à cette zone de grandir */
+            min-height: 0; /* Correction pour le flexbox dans certains navigateurs */
         }
         .top-buttons {
             display: flex;
             justify-content: space-between;
-            gap: 10px;
-            margin-bottom: 20px;
+            gap: 5px; /* Espace réduit */
+            margin-bottom: 10px; /* Marge réduite */
             width: 100%;
+            flex-shrink: 0;
         }
         .image-area {
             position: relative;
-            width: 500px;
-            height: 800px;
+            width: 100%;
+            max-width: 500px;
+            aspect-ratio: 500 / 800;
             background-image: url('images/statue.jpg');
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
-            margin: 20px auto;
+            margin: 10px 0;
+            flex-shrink: 1; /* Autorise l'image à se réduire */
+            min-height: 0;
         }
         .image-area .button.transparent {
             position: absolute;
@@ -109,6 +116,10 @@
         .button.transparent {
             background-color: transparent;
             box-shadow: none;
+        }
+        .top-buttons .button {
+            width: 60px; /* Taille réduite */
+            height: 60px;
         }
         .button svg {
             width: 50%;
@@ -220,16 +231,16 @@
                 </button>
             </div>
             <div class="image-area">
-                <button class="button transparent red" data-id="5" style="top: 40px; left: 250px;">
+                <button class="button transparent red" data-id="5" style="top: 5%; left: 50%;">
                     <svg viewBox="0 0 24 24"><path d="M9 11.24V7.5C9 6.12 10.12 5 11.5 5S14 6.12 14 7.5v3.74c1.21-.81 2-2.18 2-3.74C16 5.01 13.99 3 11.5 3S7 5.01 7 7.5c0 1.56.79 2.93 2 3.74zm9.84 4.63l-4.54-2.26c-.17-.07-.35-.11-.54-.11H13v-6c0-.83-.67-1.5-1.5-1.5S10 6.67 10 7.5v10.74c-3.6-.76-3.54-.75-3.67-.75-.31 0-.59.13-.79.33l-.79.8 4.94 4.94c.27.27.65.44 1.06.44h6.79c.75 0 1.33-.55 1.44-1.28l.75-5.27c.01-.07.02-.14.02-.2 0-.62-.38-1.16-.91-1.38z"/></svg>
                 </button>
-                <button class="button transparent blue" data-id="6" style="top: 200px; left: 250px;">
+                <button class="button transparent blue" data-id="6" style="top: 25%; left: 50%;">
                     <svg viewBox="0 0 24 24"><path d="M9 11.24V7.5C9 6.12 10.12 5 11.5 5S14 6.12 14 7.5v3.74c1.21-.81 2-2.18 2-3.74C16 5.01 13.99 3 11.5 3S7 5.01 7 7.5c0 1.56.79 2.93 2 3.74zm9.84 4.63l-4.54-2.26c-.17-.07-.35-.11-.54-.11H13v-6c0-.83-.67-1.5-1.5-1.5S10 6.67 10 7.5v10.74c-3.6-.76-3.54-.75-3.67-.75-.31 0-.59.13-.79.33l-.79.8 4.94 4.94c.27.27.65.44 1.06.44h6.79c.75 0 1.33-.55 1.44-1.28l.75-5.27c.01-.07.02-.14.02-.2 0-.62-.38-1.16-.91-1.38z"/></svg>
                 </button>
-                <button class="button transparent green" data-id="7" style="top: 350px; right: 120px;">
+                <button class="button transparent green" data-id="7" style="top: 43.75%; right: 24%;">
                     <svg viewBox="0 0 24 24"><path d="M9 11.24V7.5C9 6.12 10.12 5 11.5 5S14 6.12 14 7.5v3.74c1.21-.81 2-2.18 2-3.74C16 5.01 13.99 3 11.5 3S7 5.01 7 7.5c0 1.56.79 2.93 2 3.74zm9.84 4.63l-4.54-2.26c-.17-.07-.35-.11-.54-.11H13v-6c0-.83-.67-1.5-1.5-1.5S10 6.67 10 7.5v10.74c-3.6-.76-3.54-.75-3.67-.75-.31 0-.59.13-.79.33l-.79.8 4.94 4.94c.27.27.65.44 1.06.44h6.79c.75 0 1.33-.55 1.44-1.28l.75-5.27c.01-.07.02-.14.02-.2 0-.62-.38-1.16-.91-1.38z"/></svg>
                 </button>
-                <button class="button transparent yellow" data-id="8" style="top: 550px; left: 200px;">
+                <button class="button transparent yellow" data-id="8" style="top: 68.75%; left: 40%;">
                     <svg viewBox="0 0 24 24"><path d="M9 11.24V7.5C9 6.12 10.12 5 11.5 5S14 6.12 14 7.5v3.74c1.21-.81 2-2.18 2-3.74C16 5.01 13.99 3 11.5 3S7 5.01 7 7.5c0 1.56.79 2.93 2 3.74zm9.84 4.63l-4.54-2.26c-.17-.07-.35-.11-.54-.11H13v-6c0-.83-.67-1.5-1.5-1.5S10 6.67 10 7.5v10.74c-3.6-.76-3.54-.75-3.67-.75-.31 0-.59.13-.79.33l-.79.8 4.94 4.94c.27.27.65.44 1.06.44h6.79c.75 0 1.33-.55 1.44-1.28l.75-5.27c.01-.07.02-.14.02-.2 0-.62-.38-1.16-.91-1.38z"/></svg>
                 </button>
             </div>
