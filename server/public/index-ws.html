@@ -258,18 +258,22 @@
             const wsHost = window.location.hostname === 'localhost' ? '127.0.0.1' : window.location.hostname;
             const ws = new WebSocket(`ws://${wsHost}:3000`);
             const statusDiv = document.getElementById('status');
+        statusDiv.style.fontWeight = 'bold';
             const messagesDiv = document.getElementById('messages');
             const waitingOverlay = document.getElementById('waiting-overlay');
             let myButtons = [];
 
             ws.onopen = () => {
                 console.log('Connecté au serveur WebSocket');
-                statusDiv.textContent = 'Connecté au serveur WebSocket';
+                statusDiv.textContent = 'Connecté';
+                statusDiv.style.color = '#28a745'; // Vert
+                ws.send(JSON.stringify({ type: 'joinRoom', roomId: 'mutabilis' }));
             };
 
             ws.onclose = () => {
                 console.log('Déconnecté du serveur WebSocket');
-                statusDiv.textContent = 'Déconnecté du serveur WebSocket';
+                statusDiv.textContent = 'Déconnecté. Rechargez la page.';
+                statusDiv.style.color = '#ff0000'; // Rouge
             };
 
             ws.onmessage = (event) => {
@@ -282,10 +286,8 @@
                         updateButtonVisibility(data.buttons);
 
                         if (data.position === 'active') {
-                            statusDiv.textContent = 'Connecté - Actif';
                             waitingOverlay.classList.add('hidden');
                         } else {
-                            statusDiv.textContent = `Connecté - En attente (Position: ${data.waitingCount})`;
                             waitingOverlay.classList.remove('hidden');
                         }
                     } else if (data.type === 'buttonMessage') {
