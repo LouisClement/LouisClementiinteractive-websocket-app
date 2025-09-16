@@ -10,11 +10,11 @@ import { URL } from 'url';
 const chataigneWss = new WebSocketServer({ port: 8080 });
 let chataigneConnection: WebSocket | null = null;
 
-chataigneWss.on('connection', (ws) => {
+chataigneWss.on('connection', (ws: WebSocket) => {
     console.log('Chataigne connected');
     chataigneConnection = ws;
     ws.on('close', () => { chataigneConnection = null; });
-    ws.on('error', (error) => { console.error('Chataigne connection error:', error); });
+    ws.on('error', (error: Error) => { console.error('Chataigne connection error:', error); });
 });
 
 const app = express();
@@ -55,7 +55,7 @@ wss.on('connection', (ws: WebSocket & { userId?: string }, req: IncomingMessage)
     console.log(`Client connected: ${ws.userId}${isPriorityUser ? ' (Priority)' : ''}`);
     roomManager.addUser(ws.userId, isPriorityUser);
 
-    ws.on('message', (message) => {
+    ws.on('message', (message: Buffer) => {
         try {
             const data = JSON.parse(message.toString());
             if (data.buttonId && ws.userId && roomManager.canUseButton(ws.userId, data.buttonId)) {
@@ -63,7 +63,9 @@ wss.on('connection', (ws: WebSocket & { userId?: string }, req: IncomingMessage)
                     chataigneConnection.send(JSON.stringify({ buttonId: data.buttonId }));
                 }
                 const broadcastMessage = { type: 'buttonMessage', buttonId: data.buttonId, userId: ws.userId };
-                wss.clients.forEach(c => { if (c.readyState === WebSocket.OPEN) c.send(JSON.stringify(broadcastMessage)); });
+                wss.clients.forEach((c: WebSocket & { userId?: string }) => { 
+                    if (c.readyState === WebSocket.OPEN) c.send(JSON.stringify(broadcastMessage)); 
+                });
             } else {
                 ws.send(JSON.stringify({ type: 'error', message: 'Button not assigned' }));
             }
@@ -79,7 +81,7 @@ wss.on('connection', (ws: WebSocket & { userId?: string }, req: IncomingMessage)
         }
     });
 
-    ws.on('error', (error) => {
+    ws.on('error', (error: Error) => {
         console.error('WebSocket error for', ws.userId, ':', error);
     });
 });
