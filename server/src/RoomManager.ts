@@ -1,112 +1,124 @@
 interface User {
-  id: string;
-  joinedAt: number;
+    id: string;
+    assignedButtons: number[];
+    joinTime: number;
+    isPriority: boolean;
 }
 
-interface RoomState {
-  activeUsers: User[];
-  waitingUsers: User[];
-  maxActiveUsers: number;
-  timeoutMinutes: number;
-}
-
-interface ButtonMessage {
-  userId: string;
-  buttonId: string;
-  message: string;
+interface Room {
+    activeUsers: User[];
+    waitingUsers: User[];
+    lastRotationTime: number;
+    rotationIntervalMs: number;
 }
 
 export class RoomManager {
-  private activeUsers: User[] = [];
-  private waitingUsers: User[] = [];
-  private readonly maxActiveUsers: number;
-  private readonly timeout: number;
-  private timeoutHandlers: Map<string, NodeJS.Timeout> = new Map();
+    private room: Room;
+    private notifyCallback: () => void = () => {};
 
-  constructor(maxActiveUsers: number, timeout: number) {
-    this.maxActiveUsers = maxActiveUsers;
-    this.timeout = timeout;
-  }
 
-  private startUserTimeout(userId: string) {
-    if (this.timeoutHandlers.has(userId)) {
-      clearTimeout(this.timeoutHandlers.get(userId)!);
+    constructor(rotationIntervalMs: number = 5 * 60 * 1000) {
+        this.room = {
+            activeUsers: [],
+            waitingUsers: [],
+            lastRotationTime: Date.now(),
+            rotationIntervalMs: rotationIntervalMs,
+        };
+        setInterval(() => this.rotateActiveUsers(), this.room.rotationIntervalMs);
     }
 
-    const handler = setTimeout(() => {
-      if (this.waitingUsers.length > 0) {
-        this.removeUser(userId);
-        const nextUser = this.waitingUsers[0];
-        this.promoteUser(nextUser.id);
-      }
-    }, this.timeout);
-
-    this.timeoutHandlers.set(userId, handler);
-  }
-
-  private promoteUser(userId: string) {
-    const userIndex = this.waitingUsers.findIndex(u => u.id === userId);
-    if (userIndex === -1) return;
-
-    const user = this.waitingUsers[userIndex];
-    this.waitingUsers.splice(userIndex, 1);
-    this.activeUsers.push(user);
-    this.startUserTimeout(userId);
-  }
-
-  addUser(userId: string) {
-    const user = { id: userId, joinedAt: Date.now() };
-    
-    if (this.activeUsers.length < this.maxActiveUsers) {
-      this.activeUsers.push(user);
-      this.startUserTimeout(userId);
-    } else {
-      this.waitingUsers.push(user);
-    }
-  }
-
-  removeUser(userId: string) {
-    const activeIndex = this.activeUsers.findIndex(u => u.id === userId);
-    if (activeIndex !== -1) {
-      this.activeUsers.splice(activeIndex, 1);
-      if (this.timeoutHandlers.has(userId)) {
-        clearTimeout(this.timeoutHandlers.get(userId)!);
-        this.timeoutHandlers.delete(userId);
-      }
-
-      if (this.waitingUsers.length > 0) {
-        this.promoteUser(this.waitingUsers[0].id);
-      }
-      return;
+    public setNotifyCallback(callback: () => void): void {
+        this.notifyCallback = callback;
     }
 
-    const waitingIndex = this.waitingUsers.findIndex(u => u.id === userId);
-    if (waitingIndex !== -1) {
-      this.waitingUsers.splice(waitingIndex, 1);
+    private notifyStateChange() {
+        if (this.notifyCallback) {
+            this.notifyCallback();
+        }
     }
-  }
 
-  handleButtonPress(userId: string, buttonId: string): ButtonMessage | null {
-    const userIndex = this.activeUsers.findIndex(u => u.id === userId);
-    if (userIndex === -1) return null;
+    private assignButtons(): void {
+        const userCount = this.room.activeUsers.length;
+        if (userCount === 0) return;
 
-    const totalUsers = this.activeUsers.length;
-    const userPosition = userIndex + 1;
-    const message = `${totalUsers}-${userPosition}-${buttonId}`;
+        // Reset all buttons
+        this.room.activeUsers.forEach(user => user.assignedButtons = []);
 
-    return {
-      userId,
-      buttonId,
-      message
-    };
-  }
+        const totalButtons = 16;
+        for (let i = 1; i <= totalButtons; i++) {
+            const userIndex = (i - 1) % userCount;
+            this.room.activeUsers[userIndex].assignedButtons.push(i);
+        }
+    }
 
-  getRoomState(): RoomState {
-    return {
-      activeUsers: this.activeUsers,
-      waitingUsers: this.waitingUsers,
-      maxActiveUsers: this.maxActiveUsers,
-      timeoutMinutes: this.timeout / (60 * 1000)
-    };
-  }
+    public addUser(userId: string, isPriority: boolean = false): void {
+        const newUser: User = { id: userId, assignedButtons: [], joinTime: Date.now(), isPriority };
+
+        if (isPriority) {
+            // Si l'utilisateur est prioritaire, il prend la place d'un non-prioritaire si nécessaire
+            if (this.room.activeUsers.length >= 8) {
+                const nonPriorityIndex = this.room.activeUsers.findIndex(u => !u.isPriority);
+                if (nonPriorityIndex !== -1) {
+                    const userToWait = this.room.activeUsers.splice(nonPriorityIndex, 1)[0];
+                    this.room.waitingUsers.unshift(userToWait); // Le met au début de la file d'attente
+                }
+            }
+            this.room.activeUsers.push(newUser);
+        } else {
+            // Comportement normal pour les utilisateurs non-prioritaires
+            if (this.room.activeUsers.length < 8) {
+                this.room.activeUsers.push(newUser);
+            } else {
+                this.room.waitingUsers.push(newUser);
+            }
+        }
+
+        this.assignButtons();
+        this.notifyStateChange();
+    }
+
+    public removeUser(userId: string): void {
+        const initialActiveCount = this.room.activeUsers.length;
+        this.room.activeUsers = this.room.activeUsers.filter(u => u.id !== userId);
+        this.room.waitingUsers = this.room.waitingUsers.filter(u => u.id !== userId);
+
+        if (this.room.activeUsers.length < initialActiveCount) {
+            if (this.room.waitingUsers.length > 0) {
+                const nextUser = this.room.waitingUsers.shift()!;
+                this.room.activeUsers.push(nextUser);
+            }
+            this.assignButtons();
+        }
+        this.notifyStateChange();
+    }
+
+    private rotateActiveUsers(): void {
+        if (this.room.waitingUsers.length > 0) {
+            const usersToRotateCount = Math.min(this.room.activeUsers.length, this.room.waitingUsers.length);
+            const returningUsers = this.room.activeUsers.splice(0, usersToRotateCount);
+            const newUsers = this.room.waitingUsers.splice(0, usersToRotateCount);
+
+            this.room.activeUsers.push(...newUsers);
+            this.room.waitingUsers.push(...returningUsers);
+            
+            this.assignButtons();
+            this.room.lastRotationTime = Date.now();
+            this.notifyStateChange();
+        }
+    }
+
+    public canUseButton(userId: string, buttonId: number): boolean {
+        const user = this.room.activeUsers.find(u => u.id === userId);
+        return user ? user.assignedButtons.includes(buttonId) : false;
+    }
+
+    public getTimeUntilNextRotation(): number {
+        const now = Date.now();
+        const timeSinceRotation = now - this.room.lastRotationTime;
+        return Math.max(0, this.room.rotationIntervalMs - timeSinceRotation);
+    }
+
+    public getState(): Room {
+        return this.room;
+    }
 }
