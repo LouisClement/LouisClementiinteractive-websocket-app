@@ -1,9 +1,10 @@
 import express from 'express';
-import { createServer } from 'http';
+import { createServer, IncomingMessage } from 'http';
 import { WebSocket, WebSocketServer } from 'ws';
 import cors from 'cors';
 import { RoomManager } from './RoomManager';
 import path from 'path';
+import { URL } from 'url';
 
 // Serveur WebSocket pour Chataigne
 const chataigneWss = new WebSocketServer({ port: 8080 });
@@ -46,10 +47,13 @@ const sendStateToAllUsers = () => {
 
 roomManager.setNotifyCallback(sendStateToAllUsers);
 
-wss.on('connection', (ws: WebSocket & { userId?: string }) => {
+wss.on('connection', (ws: WebSocket & { userId?: string }, req: IncomingMessage) => {
+    const fullUrl = new URL(req.url || '', `http://${req.headers.host}`);
+    const isPriorityUser = fullUrl.searchParams.get('admin') === 'true';
+
     ws.userId = Math.random().toString(36).substring(7);
-    console.log('Client connected:', ws.userId);
-    roomManager.addUser(ws.userId);
+    console.log(`Client connected: ${ws.userId}${isPriorityUser ? ' (Priority)' : ''}`);
+    roomManager.addUser(ws.userId, isPriorityUser);
 
     ws.on('message', (message) => {
         try {

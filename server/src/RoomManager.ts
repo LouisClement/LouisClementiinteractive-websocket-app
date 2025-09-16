@@ -2,6 +2,7 @@ interface User {
     id: string;
     assignedButtons: number[];
     joinTime: number;
+    isPriority: boolean;
 }
 
 interface Room {
@@ -50,14 +51,29 @@ export class RoomManager {
         }
     }
 
-    public addUser(userId: string): void {
-        const newUser: User = { id: userId, assignedButtons: [], joinTime: Date.now() };
-        if (this.room.activeUsers.length < 8) {
+    public addUser(userId: string, isPriority: boolean = false): void {
+        const newUser: User = { id: userId, assignedButtons: [], joinTime: Date.now(), isPriority };
+
+        if (isPriority) {
+            // Si l'utilisateur est prioritaire, il prend la place d'un non-prioritaire si nécessaire
+            if (this.room.activeUsers.length >= 8) {
+                const nonPriorityIndex = this.room.activeUsers.findIndex(u => !u.isPriority);
+                if (nonPriorityIndex !== -1) {
+                    const userToWait = this.room.activeUsers.splice(nonPriorityIndex, 1)[0];
+                    this.room.waitingUsers.unshift(userToWait); // Le met au début de la file d'attente
+                }
+            }
             this.room.activeUsers.push(newUser);
-            this.assignButtons();
         } else {
-            this.room.waitingUsers.push(newUser);
+            // Comportement normal pour les utilisateurs non-prioritaires
+            if (this.room.activeUsers.length < 8) {
+                this.room.activeUsers.push(newUser);
+            } else {
+                this.room.waitingUsers.push(newUser);
+            }
         }
+
+        this.assignButtons();
         this.notifyStateChange();
     }
 
