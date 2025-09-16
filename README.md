@@ -1,57 +1,62 @@
-# Interactive WebSocket Room
+# Mutabilis - Application Interactive WebSocket
 
-A real-time interactive web application built with React, TypeScript, and Socket.IO. This application manages a room of users with features like:
+Cette application fournit une interface web interactive permettant à des utilisateurs de contrôler une installation (par exemple, via Châtaigne) en utilisant des boutons sur leur smartphone ou ordinateur. Le système gère une salle d'attente et un roulement pour les utilisateurs actifs.
 
-- Real-time user connection management
-- Support for up to 8 active users
-- Waiting queue for additional users
-- Interactive button system
-- Automatic user timeout after 5 minutes of inactivity
+## Fonctionnalités
 
-## Tech Stack
+*   **Serveur WebSocket** : Construit avec Node.js, Express et la bibliothèque `ws`.
+*   **Interface Client** : Une page web responsive (`HTML`/`CSS`/`JS`) qui se connecte au serveur.
+*   **Système de Salle d'Attente** : Gère un nombre limité d'utilisateurs actifs et place les autres en file d'attente.
+*   **Rotation des Utilisateurs** : Fait tourner les utilisateurs entre la file d'attente et la session active à intervalle régulier.
+*   **Utilisateur Prioritaire** : Permet à un administrateur de se connecter et de devenir actif immédiatement.
+*   **Communication avec Châtaigne** : Un second serveur WebSocket sur le port `8080` est dédié à la communication avec le logiciel Châtaigne.
 
-- Frontend: React + TypeScript + Vite
-- Backend: Node.js + Express + Socket.IO
-- Development: Concurrently for running multiple servers
+## Prérequis
 
-## Getting Started
+*   [**Node.js**](https://nodejs.org/) (version 16 ou supérieure recommandée). `npm` est inclus avec Node.js.
+*   [**Git**](https://git-scm.com/) pour cloner le projet.
 
-1. Clone the repository:
-```bash
-git clone <your-repo-url>
-cd interactive-websocket-app
-```
+## Installation
 
-2. Install dependencies:
-```bash
-npm install
-cd server && npm install && cd ..
-```
+1.  **Clonez le dépôt GitHub** :
+    ```bash
+    git clone https://github.com/LouisClement/LouisClementiinteractive-websocket-app.git
+    ```
 
-3. Start the development servers:
-```bash
-npm run dev:all
-```
+2.  **Naviguez dans le dossier du serveur** :
+    ```bash
+    cd LouisClementiinteractive-websocket-app/server
+    ```
 
-This will start both the frontend (http://localhost:5173) and backend (http://localhost:3000) servers.
+3.  **Installez les dépendances** :
+    Cette commande télécharge toutes les bibliothèques nécessaires au projet.
+    ```bash
+    npm install
+    ```
 
-## Project Structure
+## Lancement de l'application
 
-```
-├── src/                # Frontend source files
-│   ├── components/     # React components
-│   ├── hooks/         # Custom React hooks
-│   ├── services/      # Service layer (Socket.IO)
-│   └── types/         # TypeScript type definitions
-├── server/            # Backend source files
-│   ├── src/           # Server source code
-│   └── package.json   # Server dependencies
-└── package.json       # Frontend dependencies
-```
+### Sur Windows
 
-## Features
+Double-cliquez sur le fichier `Lancer-Mutabilis.bat` à la racine du projet. Il lancera le serveur et ouvrira automatiquement la page de l'application dans votre navigateur.
 
-- **User Management**: Automatically handles user connections and disconnections
-- **Room System**: Maintains active users and a waiting queue
-- **Real-time Updates**: All state changes are immediately broadcast to all connected clients
-- **Timeout System**: Inactive users are automatically removed after 5 minutes
+### Sur macOS ou manuellement
+
+1.  Ouvrez un terminal dans le dossier `server`.
+2.  Lancez le serveur avec la commande :
+    ```bash
+    npm start
+    ```
+Le serveur démarre en utilisant `ts-node`, qui compile et exécute le code TypeScript à la volée. Aucune étape de `build` n'est nécessaire pour le développement.
+
+Le terminal affichera un message de confirmation : `Server running on http://0.0.0.0:3000`.
+
+## Accès à l'application
+
+*   **Utilisateurs** : Ouvrez un navigateur et allez à l'adresse `http://<ADRESSE_IP_DU_SERVEUR>:3000`.
+*   **Administrateur (Utilisateur Prioritaire)** : Pour un accès prioritaire qui contourne la file d'attente, utilisez l'URL : `http://<ADRESSE_IP_DU_SERVEUR>:3000?admin=true`.
+
+## Architecture et Ports
+
+*   **Serveur Web Principal** : Port `3000`. Sert l'interface client et gère les connexions des utilisateurs.
+*   **Serveur pour Châtaigne** : Port `8080`. Un serveur WebSocket distinct écoute sur ce port pour recevoir des connexions exclusives de Châtaigne.
