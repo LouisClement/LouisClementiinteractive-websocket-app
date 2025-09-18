@@ -56,13 +56,19 @@
             width: 100%;
             max-width: 500px;
             aspect-ratio: 500 / 800;
-            background-image: url('images/statue.jpg');
-            background-size: contain;
-            background-repeat: no-repeat;
-            background-position: center;
             margin: 10px 0;
             flex-shrink: 1; /* Autorise l'image à se réduire */
             min-height: 0;
+        }
+
+        .image-area > img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            z-index: 1;
         }
         .image-area .button.transparent {
             position: absolute;
@@ -73,6 +79,7 @@
             border: none;
             cursor: pointer;
             transition: all 0.3s ease;
+            z-index: 2; /* S'assure que les boutons sont au-dessus de l'image */
         }
         .image-area .button.transparent:hover {
             transform: scale(1.1);
@@ -238,6 +245,7 @@
                 </button>
             </div>
             <div class="image-area">
+                <img src="images/statue.jpg" alt="Statue">
                 <button class="button transparent red" data-id="5" style="top: 5%; left: 50%;">
                     <svg viewBox="0 0 24 24"><path d="M9 11.24V7.5C9 6.12 10.12 5 11.5 5S14 6.12 14 7.5v3.74c1.21-.81 2-2.18 2-3.74C16 5.01 13.99 3 11.5 3S7 5.01 7 7.5c0 1.56.79 2.93 2 3.74zm9.84 4.63l-4.54-2.26c-.17-.07-.35-.11-.54-.11H13v-6c0-.83-.67-1.5-1.5-1.5S10 6.67 10 7.5v10.74c-3.6-.76-3.54-.75-3.67-.75-.31 0-.59.13-.79.33l-.79.8 4.94 4.94c.27.27.65.44 1.06.44h6.79c.75 0 1.33-.55 1.44-1.28l.75-5.27c.01-.07.02-.14.02-.2 0-.62-.38-1.16-.91-1.38z"/></svg>
                 </button>
