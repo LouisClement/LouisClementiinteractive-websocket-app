@@ -338,118 +338,105 @@
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const introOverlay = document.getElementById('intro-overlay');
-            const startButton = document.getElementById('start-button');
-            const gameContainer = document.getElementById('game-container');
-            const adminContainer = document.getElementById('admin-container');
+    // Placer tout le script à la fin du body garantit que tous les éléments HTML sont chargés.
 
-            const urlParams = new URLSearchParams(window.location.search);
-            const isAdmin = urlParams.get('admin') === 'true';
+    // 1. Définir les constantes pour les éléments de la page
+    const introOverlay = document.getElementById('intro-overlay');
+    const startButton = document.getElementById('start-button');
+    const gameContainer = document.getElementById('game-container');
+    const adminContainer = document.getElementById('admin-container');
+    const waitingOverlay = document.getElementById('waiting-overlay');
 
-            if (isAdmin) {
-                introOverlay.style.display = 'none';
-                gameContainer.style.display = 'none';
-                adminContainer.style.display = 'flex';
-                startExperience(isAdmin);
+    // 2. Déterminer le mode (admin ou non) une seule fois
+    const urlParams = new URLSearchParams(window.location.search);
+    const isAdmin = urlParams.get('admin') === 'true';
+
+    // 3. Logique de démarrage de l'expérience
+    function startExperience() {
+        const wsHost = window.location.hostname === 'localhost' ? '127.0.0.1' : window.location.hostname;
+        const wsUrl = `ws://${wsHost}:3000${isAdmin ? '?admin=true' : ''}`;
+        const ws = new WebSocket(wsUrl);
+
+        const statusDiv = isAdmin ? document.getElementById('status-admin') : document.getElementById('status');
+        if (statusDiv) statusDiv.style.fontWeight = 'bold';
+
+        ws.onopen = () => {
+            console.log('Connecté au serveur WebSocket');
+            if (statusDiv) {
+                statusDiv.textContent = 'Connecté';
+                statusDiv.style.color = '#28a745';
+            }
+            ws.send(JSON.stringify({ type: 'joinRoom', roomId: 'mutabilis' }));
+        };
+
+        ws.onclose = () => {
+            console.log('Déconnecté du serveur WebSocket');
+            if (statusDiv) {
+                statusDiv.textContent = 'Déconnecté. Rechargez la page.';
+                statusDiv.style.color = '#dc3545';
+            }
+        };
+
+        ws.onmessage = (event) => {
+            try {
+                const data = JSON.parse(event.data);
+                if (data.type === 'userState') {
+                    if (isAdmin) {
+                        // L'admin voit toujours tous les boutons
+                        updateButtonVisibility([1, 2, 3, 4, 5, 6, 7, 8]);
+                    } else {
+                        // L'utilisateur normal voit ses boutons et l'écran d'attente
+                        updateButtonVisibility(data.buttons);
+                        if (data.position === 'active') {
+                            waitingOverlay.classList.add('hidden');
+                        } else {
+                            waitingOverlay.classList.remove('hidden');
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error processing message:', error);
+            }
+        };
+
+        // Attacher les événements de clic à TOUS les boutons une seule fois
+        document.querySelectorAll('.button').forEach(button => {
+            button.addEventListener('click', () => {
+                if (ws.readyState === WebSocket.OPEN) {
+                    ws.send(JSON.stringify({ buttonId: parseInt(button.dataset.id) }));
+                }
+            });
+        });
+    }
+
+    // 4. Fonction pour gérer la visibilité des boutons
+    function updateButtonVisibility(assignedButtons) {
+        const container = isAdmin ? adminContainer : gameContainer;
+        container.querySelectorAll('.button').forEach(button => {
+            const buttonId = parseInt(button.dataset.id);
+            if (assignedButtons.includes(buttonId)) {
+                button.style.display = 'flex';
             } else {
-                startButton.addEventListener('click', () => {
-                    introOverlay.style.display = 'none';
-                    gameContainer.classList.remove('hidden');
-                    startExperience(isAdmin);
-                });
+                button.style.display = 'none';
             }
         });
+    }
 
-        function startExperience(isAdmin) {
-            const wsHost = window.location.hostname === 'localhost' ? '127.0.0.1' : window.location.hostname;
-            const wsUrl = `ws://${wsHost}:3000${isAdmin ? '?admin=true' : ''}`;
-            const ws = new WebSocket(wsUrl);
-            const statusDiv = isAdmin ? document.getElementById('status-admin') : document.getElementById('status');
-            if (statusDiv) statusDiv.style.fontWeight = 'bold';
-            const messagesDiv = document.getElementById('messages');
-            const waitingOverlay = document.getElementById('waiting-overlay');
-            let myButtons = [];
+    // 5. Point d'entrée principal
+    if (isAdmin) {
+        introOverlay.style.display = 'none';
+        gameContainer.style.display = 'none';
+        adminContainer.style.display = 'flex';
+        startExperience();
+    } else {
+        adminContainer.style.display = 'none';
+        startButton.addEventListener('click', () => {
+            introOverlay.style.display = 'none';
+            gameContainer.classList.remove('hidden');
+            startExperience();
+        });
+    }
 
-            ws.onopen = () => {
-                console.log('Connecté au serveur WebSocket');
-                statusDiv.textContent = 'Connecté';
-                statusDiv.style.color = '#28a745'; // Vert
-                ws.send(JSON.stringify({ type: 'joinRoom', roomId: 'mutabilis' }));
-            };
-
-            ws.onclose = () => {
-                console.log('Déconnecté du serveur WebSocket');
-                statusDiv.textContent = 'Déconnecté. Rechargez la page.';
-                statusDiv.style.color = '#ff0000'; // Rouge
-            };
-
-            ws.onmessage = (event) => {
-                try {
-                    const data = JSON.parse(event.data);
-                    console.log('Received:', data);
-                    
-                    if (data.type === 'userState') {
-                        if (isAdmin) {
-                            // Pour l'admin, tous les boutons sont toujours visibles
-                            updateButtonVisibility([1, 2, 3, 4, 5, 6, 7, 8], isAdmin);
-                        } else {
-                            // Pour un utilisateur normal, mettre à jour les boutons et l'écran d'attente
-                            myButtons = data.buttons;
-                            updateButtonVisibility(myButtons, isAdmin);
-                            if (data.position === 'active') {
-                                waitingOverlay.classList.add('hidden');
-                            } else {
-                                waitingOverlay.classList.remove('hidden');
-                            }
-                        }
-                    } else if (data.type === 'buttonMessage') {
-                        const message = `Bouton ${data.buttonId} pressé par ${data.userId}`;
-                        const messageElement = document.createElement('p');
-                        messageElement.textContent = message;
-                        messagesDiv.insertBefore(messageElement, messagesDiv.firstChild);
-                    } else if (data.type === 'error') {
-                        const messageElement = document.createElement('p');
-                        messageElement.textContent = `Erreur : ${data.message}`;
-                        messageElement.style.color = '#ff0000';
-                        messagesDiv.insertBefore(messageElement, messagesDiv.firstChild);
-                    }
-                } catch (error) {
-                    console.error('Error processing message:', error);
-                }
-            };
-
-            function pressButton(buttonId) {
-                if (ws.readyState === WebSocket.OPEN) {
-                    ws.send(JSON.stringify({ buttonId }));
-                } else {
-                    console.error('WebSocket non connecté');
-                    statusDiv.textContent = 'Non connecté au serveur';
-                }
-            }
-
-            document.querySelectorAll('.button').forEach(button => {
-                button.addEventListener('click', () => {
-                    const buttonId = parseInt(button.dataset.id);
-                    pressButton(buttonId);
-                });
-            });
-
-            function updateButtonVisibility(assignedButtons, isAdmin) {
-                const adminContainer = document.getElementById('admin-container');
-                const gameContainer = document.getElementById('game-container');
-                const container = isAdmin ? adminContainer : gameContainer;
-                container.querySelectorAll('.button').forEach(button => {
-                    const buttonId = parseInt(button.dataset.id);
-                    if (assignedButtons.includes(buttonId)) {
-                        button.style.display = 'flex';
-                    } else {
-                        button.style.display = 'none';
-                    }
-                });
-            }
-        }
-
-    </script>
+</script>
 </body>
 </html>

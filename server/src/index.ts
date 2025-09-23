@@ -19,6 +19,14 @@ chataigneWss.on('connection', (ws) => {
 
 const app = express();
 app.use(cors());
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, '../public/index-ws.html'));
+});
+
+app.get('/admin', (req, res) => {
+    res.sendFile(path.join(__dirname, '../public/admin.html'));
+});
+
 app.use(express.static(path.join(__dirname, '../public')));
 
 const server = createServer(app);
