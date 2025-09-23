@@ -338,33 +338,35 @@
     </div>
 
     <script>
-        const introOverlay = document.getElementById('intro-overlay');
-        const startButton = document.getElementById('start-button');
-        const gameContainer = document.getElementById('game-container');
-        const adminContainer = document.getElementById('admin-container');
+        document.addEventListener('DOMContentLoaded', () => {
+            const introOverlay = document.getElementById('intro-overlay');
+            const startButton = document.getElementById('start-button');
+            const gameContainer = document.getElementById('game-container');
+            const adminContainer = document.getElementById('admin-container');
 
-        const urlParams = new URLSearchParams(window.location.search);
-        const isAdmin = urlParams.get('admin') === 'true';
+            const urlParams = new URLSearchParams(window.location.search);
+            const isAdmin = urlParams.get('admin') === 'true';
 
-        if (isAdmin) {
-            introOverlay.classList.add('hidden');
-            gameContainer.classList.add('hidden');
-            adminContainer.style.display = 'flex';
-            startExperience();
-        } else {
-            startButton.addEventListener('click', () => {
-                introOverlay.classList.add('hidden');
-                gameContainer.classList.remove('hidden');
-                startExperience();
-            });
-        }
+            if (isAdmin) {
+                introOverlay.style.display = 'none';
+                gameContainer.style.display = 'none';
+                adminContainer.style.display = 'flex';
+                startExperience(isAdmin);
+            } else {
+                startButton.addEventListener('click', () => {
+                    introOverlay.style.display = 'none';
+                    gameContainer.classList.remove('hidden');
+                    startExperience(isAdmin);
+                });
+            }
+        });
 
-        function startExperience() {
+        function startExperience(isAdmin) {
             const wsHost = window.location.hostname === 'localhost' ? '127.0.0.1' : window.location.hostname;
             const wsUrl = `ws://${wsHost}:3000${isAdmin ? '?admin=true' : ''}`;
             const ws = new WebSocket(wsUrl);
             const statusDiv = isAdmin ? document.getElementById('status-admin') : document.getElementById('status');
-        statusDiv.style.fontWeight = 'bold';
+            if (statusDiv) statusDiv.style.fontWeight = 'bold';
             const messagesDiv = document.getElementById('messages');
             const waitingOverlay = document.getElementById('waiting-overlay');
             let myButtons = [];
@@ -388,13 +390,13 @@
                     console.log('Received:', data);
                     
                     if (data.type === 'userState') {
-                        myButtons = data.buttons;
-                        updateButtonVisibility(data.buttons);
-
                         if (isAdmin) {
                             // Pour l'admin, tous les boutons sont toujours visibles
-                            updateButtonVisibility([1, 2, 3, 4, 5, 6, 7, 8]);
+                            updateButtonVisibility([1, 2, 3, 4, 5, 6, 7, 8], isAdmin);
                         } else {
+                            // Pour un utilisateur normal, mettre à jour les boutons et l'écran d'attente
+                            myButtons = data.buttons;
+                            updateButtonVisibility(myButtons, isAdmin);
                             if (data.position === 'active') {
                                 waitingOverlay.classList.add('hidden');
                             } else {
@@ -433,7 +435,9 @@
                 });
             });
 
-            function updateButtonVisibility(assignedButtons) {
+            function updateButtonVisibility(assignedButtons, isAdmin) {
+                const adminContainer = document.getElementById('admin-container');
+                const gameContainer = document.getElementById('game-container');
                 const container = isAdmin ? adminContainer : gameContainer;
                 container.querySelectorAll('.button').forEach(button => {
                     const buttonId = parseInt(button.dataset.id);
