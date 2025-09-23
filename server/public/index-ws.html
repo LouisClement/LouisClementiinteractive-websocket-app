@@ -126,6 +126,61 @@
         .button.green {
             background-color: #38a169; /* Vert */
         }
+
+        /* Admin Interface Styles */
+        .admin-container {
+            display: none; /* Caché par défaut */
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100vh;
+            background-color: #3c5a99; /* Fond bleu de l'image */
+        }
+
+        .admin-container .title {
+            color: black;
+            font-family: 'Times New Roman', serif;
+            font-size: 4em;
+            margin-bottom: 30px;
+        }
+
+        .status-indicator {
+            color: white;
+            text-align: center;
+            padding: 10px;
+            margin-bottom: 20px;
+            background-color: rgba(0,0,0,0.2);
+            border-radius: 10px;
+            font-weight: bold;
+        }
+
+        .admin-buttons {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .admin-row {
+            display: flex;
+            gap: 20px;
+        }
+
+        .admin-buttons .button {
+            width: 100px;
+            height: 100px;
+        }
+
+        .admin-buttons .button.round {
+            border-radius: 50%;
+        }
+
+        .admin-buttons .button.large {
+            width: 220px;
+            height: 120px;
+        }
+
         .button.transparent {
             background-color: transparent;
             box-shadow: none;
@@ -223,6 +278,7 @@
         </div>
     </div>
     <div id="game-container" class="container hidden">
+        <!-- Contenu existant pour les utilisateurs normaux -->
         <h1 class="title">MUTABILIS</h1>
         <div class="game-area">
             <div id="waiting-overlay" class="waiting-overlay hidden">
@@ -264,15 +320,50 @@
         </div>
     </div>
 
+    <div id="admin-container" class="admin-container">
+        <h1 class="title">MUTABILIS</h1>
+        <div id="status-admin" class="status-indicator">État de la salle : En attente...</div>
+        <div class="admin-buttons">
+            <div class="admin-row">
+                <button class="button pink" data-id="1"><svg viewBox="0 0 24 24"><path d="M9 11.24V7.5C9 6.12 10.12 5 11.5 5S14 6.12 14 7.5v3.74c1.21-.81 2-2.18 2-3.74C16 5.01 13.99 3 11.5 3S7 5.01 7 7.5c0 1.56.79 2.93 2 3.74zm9.84 4.63l-4.54-2.26c-.17-.07-.35-.11-.54-.11H13v-6c0-.83-.67-1.5-1.5-1.5S10 6.67 10 7.5v10.74c-3.6-.76-3.54-.75-3.67-.75-.31 0-.59.13-.79.33l-.79.8 4.94 4.94c.27.27.65.44 1.06.44h6.79c.75 0 1.33-.55 1.44-1.28l.75-5.27c.01-.07.02-.14.02-.2 0-.62-.38-1.16-.91-1.38z"/></svg></button>
+                <button class="button orange" data-id="2"><svg viewBox="0 0 24 24"><path d="M9 11.24V7.5C9 6.12 10.12 5 11.5 5S14 6.12 14 7.5v3.74c1.21-.81 2-2.18 2-3.74C16 5.01 13.99 3 11.5 3S7 5.01 7 7.5c0 1.56.79 2.93 2 3.74zm9.84 4.63l-4.54-2.26c-.17-.07-.35-.11-.54-.11H13v-6c0-.83-.67-1.5-1.5-1.5S10 6.67 10 7.5v10.74c-3.6-.76-3.54-.75-3.67-.75-.31 0-.59.13-.79.33l-.79.8 4.94 4.94c.27.27.65.44 1.06.44h6.79c.75 0 1.33-.55 1.44-1.28l.75-5.27c.01-.07.02-.14.02-.2 0-.62-.38-1.16-.91-1.38z"/></svg></button>
+                <button class="button blue" data-id="3"><svg viewBox="0 0 24 24"><path d="M9 11.24V7.5C9 6.12 10.12 5 11.5 5S14 6.12 14 7.5v3.74c1.21-.81 2-2.18 2-3.74C16 5.01 13.99 3 11.5 3S7 5.01 7 7.5c0 1.56.79 2.93 2 3.74zm9.84 4.63l-4.54-2.26c-.17-.07-.35-.11-.54-.11H13v-6c0-.83-.67-1.5-1.5-1.5S10 6.67 10 7.5v10.74c-3.6-.76-3.54-.75-3.67-.75-.31 0-.59.13-.79.33l-.79.8 4.94 4.94c.27.27.65.44 1.06.44h6.79c.75 0 1.33-.55 1.44-1.28l.75-5.27c.01-.07.02-.14.02-.2 0-.62-.38-1.16-.91-1.38z"/></svg></button>
+                <button class="button green" data-id="4"><svg viewBox="0 0 24 24"><path d="M9 11.24V7.5C9 6.12 10.12 5 11.5 5S14 6.12 14 7.5v3.74c1.21-.81 2-2.18 2-3.74C16 5.01 13.99 3 11.5 3S7 5.01 7 7.5c0 1.56.79 2.93 2 3.74zm9.84 4.63l-4.54-2.26c-.17-.07-.35-.11-.54-.11H13v-6c0-.83-.67-1.5-1.5-1.5S10 6.67 10 7.5v10.74c-3.6-.76-3.54-.75-3.67-.75-.31 0-.59.13-.79.33l-.79.8 4.94 4.94c.27.27.65.44 1.06.44h6.79c.75 0 1.33-.55 1.44-1.28l.75-5.27c.01-.07.02-.14.02-.2 0-.62-.38-1.16-.91-1.38z"/></svg></button>
+            </div>
+            <button class="button red round" data-id="5"><svg viewBox="0 0 24 24"><path d="M9 11.24V7.5C9 6.12 10.12 5 11.5 5S14 6.12 14 7.5v3.74c1.21-.81 2-2.18 2-3.74C16 5.01 13.99 3 11.5 3S7 5.01 7 7.5c0 1.56.79 2.93 2 3.74zm9.84 4.63l-4.54-2.26c-.17-.07-.35-.11-.54-.11H13v-6c0-.83-.67-1.5-1.5-1.5S10 6.67 10 7.5v10.74c-3.6-.76-3.54-.75-3.67-.75-.31 0-.59.13-.79.33l-.79.8 4.94 4.94c.27.27.65.44 1.06.44h6.79c.75 0 1.33-.55 1.44-1.28l.75-5.27c.01-.07.02-.14.02-.2 0-.62-.38-1.16-.91-1.38z"/></svg></button>
+            <button class="button blue large" data-id="6"><svg viewBox="0 0 24 24"><path d="M9 11.24V7.5C9 6.12 10.12 5 11.5 5S14 6.12 14 7.5v3.74c1.21-.81 2-2.18 2-3.74C16 5.01 13.99 3 11.5 3S7 5.01 7 7.5c0 1.56.79 2.93 2 3.74zm9.84 4.63l-4.54-2.26c-.17-.07-.35-.11-.54-.11H13v-6c0-.83-.67-1.5-1.5-1.5S10 6.67 10 7.5v10.74c-3.6-.76-3.54-.75-3.67-.75-.31 0-.59.13-.79.33l-.79.8 4.94 4.94c.27.27.65.44 1.06.44h6.79c.75 0 1.33-.55 1.44-1.28l.75-5.27c.01-.07.02-.14.02-.2 0-.62-.38-1.16-.91-1.38z"/></svg></button>
+            <button class="button green" data-id="7"><svg viewBox="0 0 24 24"><path d="M9 11.24V7.5C9 6.12 10.12 5 11.5 5S14 6.12 14 7.5v3.74c1.21-.81 2-2.18 2-3.74C16 5.01 13.99 3 11.5 3S7 5.01 7 7.5c0 1.56.79 2.93 2 3.74zm9.84 4.63l-4.54-2.26c-.17-.07-.35-.11-.54-.11H13v-6c0-.83-.67-1.5-1.5-1.5S10 6.67 10 7.5v10.74c-3.6-.76-3.54-.75-3.67-.75-.31 0-.59.13-.79.33l-.79.8 4.94 4.94c.27.27.65.44 1.06.44h6.79c.75 0 1.33-.55 1.44-1.28l.75-5.27c.01-.07.02-.14.02-.2 0-.62-.38-1.16-.91-1.38z"/></svg></button>
+            <button class="button yellow round" data-id="8"><svg viewBox="0 0 24 24"><path d="M9 11.24V7.5C9 6.12 10.12 5 11.5 5S14 6.12 14 7.5v3.74c1.21-.81 2-2.18 2-3.74C16 5.01 13.99 3 11.5 3S7 5.01 7 7.5c0 1.56.79 2.93 2 3.74zm9.84 4.63l-4.54-2.26c-.17-.07-.35-.11-.54-.11H13v-6c0-.83-.67-1.5-1.5-1.5S10 6.67 10 7.5v10.74c-3.6-.76-3.54-.75-3.67-.75-.31 0-.59.13-.79.33l-.79.8 4.94 4.94c.27.27.65.44 1.06.44h6.79c.75 0 1.33-.55 1.44-1.28l.75-5.27c.01-.07.02-.14.02-.2 0-.62-.38-1.16-.91-1.38z"/></svg></button>
+        </div>
+    </div>
+
     <script>
         const introOverlay = document.getElementById('intro-overlay');
         const startButton = document.getElementById('start-button');
         const gameContainer = document.getElementById('game-container');
+        const adminContainer = document.getElementById('admin-container');
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const isAdmin = urlParams.get('admin') === 'true';
+
+        if (isAdmin) {
+            introOverlay.classList.add('hidden');
+            gameContainer.classList.add('hidden');
+            adminContainer.style.display = 'flex';
+            startExperience();
+        } else {
+            startButton.addEventListener('click', () => {
+                introOverlay.classList.add('hidden');
+                gameContainer.classList.remove('hidden');
+                startExperience();
+            });
+        }
 
         function startExperience() {
             const wsHost = window.location.hostname === 'localhost' ? '127.0.0.1' : window.location.hostname;
-            const ws = new WebSocket(`ws://${wsHost}:3000`);
-            const statusDiv = document.getElementById('status');
+            const wsUrl = `ws://${wsHost}:3000${isAdmin ? '?admin=true' : ''}`;
+            const ws = new WebSocket(wsUrl);
+            const statusDiv = isAdmin ? document.getElementById('status-admin') : document.getElementById('status');
         statusDiv.style.fontWeight = 'bold';
             const messagesDiv = document.getElementById('messages');
             const waitingOverlay = document.getElementById('waiting-overlay');
@@ -300,10 +391,15 @@
                         myButtons = data.buttons;
                         updateButtonVisibility(data.buttons);
 
-                        if (data.position === 'active') {
-                            waitingOverlay.classList.add('hidden');
+                        if (isAdmin) {
+                            // Pour l'admin, tous les boutons sont toujours visibles
+                            updateButtonVisibility([1, 2, 3, 4, 5, 6, 7, 8]);
                         } else {
-                            waitingOverlay.classList.remove('hidden');
+                            if (data.position === 'active') {
+                                waitingOverlay.classList.add('hidden');
+                            } else {
+                                waitingOverlay.classList.remove('hidden');
+                            }
                         }
                     } else if (data.type === 'buttonMessage') {
                         const message = `Bouton ${data.buttonId} pressé par ${data.userId}`;
@@ -338,7 +434,8 @@
             });
 
             function updateButtonVisibility(assignedButtons) {
-                document.querySelectorAll('.button').forEach(button => {
+                const container = isAdmin ? adminContainer : gameContainer;
+                container.querySelectorAll('.button').forEach(button => {
                     const buttonId = parseInt(button.dataset.id);
                     if (assignedButtons.includes(buttonId)) {
                         button.style.display = 'flex';
@@ -349,11 +446,6 @@
             }
         }
 
-        startButton.addEventListener('click', () => {
-            introOverlay.classList.add('hidden');
-            gameContainer.classList.remove('hidden');
-            startExperience();
-        });
     </script>
 </body>
 </html>
