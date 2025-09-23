@@ -111,11 +111,12 @@
     </div>
 
     <script>
-        // Script simple et direct pour la page admin
+        // Script pour la page admin avec gestion des boutons disponibles
         const wsHost = window.location.hostname === 'localhost' ? '127.0.0.1' : window.location.hostname;
         const ws = new WebSocket(`ws://${wsHost}:3000?admin=true`);
         const statusDiv = document.getElementById('status');
         statusDiv.style.fontWeight = 'bold';
+        let availableButtons = [1, 2, 3, 4, 5, 6, 7, 8]; // Par défaut, tous disponibles
 
         ws.onopen = () => {
             console.log('Admin connecté au serveur WebSocket');
@@ -130,11 +131,36 @@
             statusDiv.style.color = '#dc3545';
         };
 
-        // Tous les boutons sont toujours visibles pour l'admin
+        ws.onmessage = (event) => {
+            try {
+                const data = JSON.parse(event.data);
+                if (data.type === 'userState') {
+                    // L'admin reçoit la liste des boutons qu'il peut utiliser
+                    availableButtons = data.buttons;
+                    updateButtonStates();
+                }
+            } catch (error) {
+                console.error('Error processing message:', error);
+            }
+        };
+
+        function updateButtonStates() {
+            document.querySelectorAll('.button').forEach(button => {
+                const buttonId = parseInt(button.dataset.id);
+                if (availableButtons.includes(buttonId)) {
+                    button.style.display = 'flex';
+                } else {
+                    button.style.display = 'none';
+                }
+            });
+        }
+
+        // Seuls les boutons disponibles sont affichés et cliquables pour l'admin
         document.querySelectorAll('.button').forEach(button => {
             button.addEventListener('click', () => {
-                if (ws.readyState === WebSocket.OPEN) {
-                    ws.send(JSON.stringify({ buttonId: parseInt(button.dataset.id) }));
+                const buttonId = parseInt(button.dataset.id);
+                if (ws.readyState === WebSocket.OPEN && availableButtons.includes(buttonId)) {
+                    ws.send(JSON.stringify({ buttonId: buttonId }));
                 }
             });
         });

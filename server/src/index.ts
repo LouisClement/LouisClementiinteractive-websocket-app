@@ -35,15 +35,25 @@ const roomManager = new RoomManager();
 
 const sendStateToAllUsers = () => {
     const state = roomManager.getState();
-    wss.clients.forEach((client: WebSocket & { userId?: string }) => {
+    wss.clients.forEach((client: WebSocket & { userId?: string, isPriority?: boolean }) => {
         if (client.readyState === WebSocket.OPEN && client.userId) {
             const user = state.activeUsers.find(u => u.id === client.userId) || state.waitingUsers.find(u => u.id === client.userId);
             if (user) {
                 const isActive = state.activeUsers.some(u => u.id === client.userId);
                 const waitingIndex = state.waitingUsers.findIndex(u => u.id === client.userId);
+                
+                let buttonsToSend;
+                if (client.isPriority && isActive) {
+                    // L'admin voit seulement ses boutons assignés comme les autres utilisateurs
+                    buttonsToSend = user.assignedButtons;
+                } else {
+                    // Les utilisateurs normaux voient seulement leurs boutons s'ils sont actifs
+                    buttonsToSend = isActive ? user.assignedButtons : [];
+                }
+                
                 client.send(JSON.stringify({
                     type: 'userState',
-                    buttons: isActive ? user.assignedButtons : [],
+                    buttons: buttonsToSend,
                     position: isActive ? 'active' : 'waiting',
                     waitingCount: isActive ? 0 : waitingIndex + 1,
                     timeUntilRotation: roomManager.getTimeUntilNextRotation(),
@@ -55,11 +65,12 @@ const sendStateToAllUsers = () => {
 
 roomManager.setNotifyCallback(sendStateToAllUsers);
 
-wss.on('connection', (ws: WebSocket & { userId?: string }, req: IncomingMessage) => {
+wss.on('connection', (ws: WebSocket & { userId?: string, isPriority?: boolean }, req: IncomingMessage) => {
     const fullUrl = new URL(req.url || '', `http://${req.headers.host}`);
     const isPriorityUser = fullUrl.searchParams.get('admin') === 'true';
 
     ws.userId = Math.random().toString(36).substring(7);
+    ws.isPriority = isPriorityUser;
     console.log(`Client connected: ${ws.userId}${isPriorityUser ? ' (Priority)' : ''}`);
     roomManager.addUser(ws.userId, isPriorityUser);
 
