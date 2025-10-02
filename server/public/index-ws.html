@@ -531,7 +531,12 @@
     const urlParams = new URLSearchParams(window.location.search);
     const isAdmin = urlParams.get('admin') === 'true';
 
-    // 3. Logique de démarrage de l'expérience
+    // 3. Variables pour la gestion du heartbeat et de l'activité
+    let heartbeatInterval;
+    let lastActivity = Date.now();
+    let isUserActive = true;
+
+    // 4. Logique de démarrage de l'expérience
     function startExperience() {
         const wsHost = window.location.hostname === 'localhost' ? '127.0.0.1' : window.location.hostname;
         const wsUrl = `ws://${wsHost}:3000${isAdmin ? '?admin=true' : ''}`;
@@ -547,6 +552,12 @@
                 statusDiv.style.color = '#28a745';
             }
             ws.send(JSON.stringify({ type: 'joinRoom', roomId: 'mutabilis' }));
+            
+            // Démarrer le heartbeat côté client (sauf pour les admins)
+            startClientHeartbeat(ws);
+            
+            // Démarrer la détection d'activité utilisateur
+            startActivityDetection(ws);
         };
 
         ws.onclose = () => {
@@ -560,7 +571,21 @@
         ws.onmessage = (event) => {
             try {
                 const data = JSON.parse(event.data);
-                if (data.type === 'userState') {
+                
+                // Gestion des messages de heartbeat
+                if (data.type === 'ping') {
+                    // Répondre au ping du serveur
+                    ws.send(JSON.stringify({ type: 'pong' }));
+                } else if (data.type === 'heartbeat_ack') {
+                    // Confirmation du heartbeat reçue
+                    console.log('Heartbeat acknowledged');
+                } else if (data.type === 'disconnect' && data.reason === 'inactivity') {
+                    // Notification de déconnexion pour inactivité
+                    if (statusDiv) {
+                        statusDiv.textContent = 'Déconnecté pour inactivité';
+                        statusDiv.style.color = '#dc3545';
+                    }
+                } else if (data.type === 'userState') {
                     if (isAdmin) {
                         // L'admin voit seulement ses boutons assignés, pas tous
                         updateButtonVisibility(data.buttons || []);
@@ -685,7 +710,66 @@
         }
     }
 
-    // 6. Point d'entrée principal
+    // 6. Fonctions de gestion du heartbeat et de l'activité
+    function startClientHeartbeat(ws) {
+        // Les admins n'ont pas besoin d'envoyer des heartbeats
+        if (isAdmin) {
+            console.log('Admin user: heartbeat disabled');
+            return;
+        }
+
+        // Envoyer un heartbeat toutes les 25 secondes (moins que le timeout serveur)
+        heartbeatInterval = setInterval(() => {
+            if (ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ type: 'heartbeat' }));
+            } else {
+                clearInterval(heartbeatInterval);
+            }
+        }, 25000);
+    }
+
+    function startActivityDetection(ws) {
+        // Les admins n'ont pas besoin de détection d'activité
+        if (isAdmin) {
+            return;
+        }
+
+        const updateActivity = () => {
+            lastActivity = Date.now();
+            isUserActive = true;
+        };
+
+        // Écouter les événements d'activité utilisateur
+        document.addEventListener('mousemove', updateActivity);
+        document.addEventListener('mousedown', updateActivity);
+        document.addEventListener('keydown', updateActivity);
+        document.addEventListener('touchstart', updateActivity);
+        document.addEventListener('touchmove', updateActivity);
+        document.addEventListener('scroll', updateActivity);
+
+        // Envoyer un signal d'activité si l'utilisateur est actif
+        setInterval(() => {
+            if (ws.readyState === WebSocket.OPEN && isUserActive) {
+                const timeSinceLastActivity = Date.now() - lastActivity;
+                if (timeSinceLastActivity < 30000) { // Actif dans les 30 dernières secondes
+                    ws.send(JSON.stringify({ type: 'user_activity' }));
+                }
+                isUserActive = false; // Reset pour la prochaine période
+            }
+        }, 30000);
+    }
+
+    function cleanupHeartbeat() {
+        if (heartbeatInterval) {
+            clearInterval(heartbeatInterval);
+            heartbeatInterval = null;
+        }
+    }
+
+    // Nettoyer les timers quand la page se ferme
+    window.addEventListener('beforeunload', cleanupHeartbeat);
+
+    // 7. Point d'entrée principal
     if (isAdmin) {
         introOverlay.style.display = 'none';
         gameContainer.style.display = 'none';
